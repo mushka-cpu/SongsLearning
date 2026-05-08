@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+ <html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vocabulary Worksheet</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0c0a;
+    --surface: #1a1714;
+    --surface2: #242018;
+    --gold: #c9a84c;
+    --gold-light: #e8c96a;
+    --text: #f0ead8;
+    --text-muted: #8a7f6a;
+    --correct: #4caf7d;
+    --wrong: #cf5a5a;
+    --accent: #d4763b;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    padding: 32px 16px 60px;
+    background-image:
+      radial-gradient(ellipse at 20% 10%, rgba(201,168,76,0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 90%, rgba(212,118,59,0.05) 0%, transparent 50%);
+  }
+  header { text-align: center; margin-bottom: 48px; padding-bottom: 32px; border-bottom: 1px solid rgba(201,168,76,0.2); }
+  header .label { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--gold); margin-bottom: 12px; }
+  header h1 { font-family: 'Playfair Display', serif; font-size: clamp(28px,6vw,52px); font-weight: 900; line-height: 1.1; background: linear-gradient(135deg, var(--gold-light), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  header p { color: var(--text-muted); font-size: 14px; margin-top: 10px; }
+  .score-bar { display: flex; align-items: center; justify-content: center; gap: 24px; background: var(--surface); border: 1px solid rgba(201,168,76,0.15); border-radius: 50px; padding: 12px 28px; width: fit-content; margin: 0 auto 48px; font-size: 14px; color: var(--text-muted); }
+  .score-bar .score-num { font-family: 'Playfair Display', serif; font-size: 24px; color: var(--gold); font-weight: 700; }
+  section { max-width: 760px; margin: 0 auto 48px; background: var(--surface); border: 1px solid rgba(201,168,76,0.12); border-radius: 20px; overflow: hidden; }
+  .section-header { background: var(--surface2); padding: 20px 28px; display: flex; align-items: center; gap: 14px; border-bottom: 1px solid rgba(201,168,76,0.1); }
+  .section-num { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--gold), var(--accent)); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: #0e0c0a; flex-shrink: 0; }
+  .section-title { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--text); }
+  .section-subtitle { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .section-body { padding: 28px; }
+
+  /* FLASHCARDS */
+  .idiom-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+  .idiom-card { padding: 14px 16px; border-radius: 12px; background: rgba(255,255,255,0.02); border: 1px solid rgba(201,168,76,0.1); cursor: pointer; transition: all 0.25s; }
+  .idiom-card:hover { border-color: var(--gold); background: rgba(201,168,76,0.05); }
+  .idiom-en { font-weight: 500; font-size: 14px; color: var(--gold-light); margin-bottom: 4px; }
+  .idiom-ru { font-size: 13px; transition: all 0.3s; }
+  .idiom-card:not(.flipped) .idiom-ru { color: transparent; user-select: none; background: rgba(201,168,76,0.1); border-radius: 4px; }
+  .idiom-card.flipped .idiom-ru { color: var(--text-muted); }
+  .idiom-hint { font-size: 11px; color: var(--text-muted); margin-top: 4px; font-style: italic; }
+
+  /* MATCH */
+  .match-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .match-col { display: flex; flex-direction: column; gap: 8px; }
+  .match-item { padding: 12px 16px; border-radius: 10px; border: 1.5px solid rgba(201,168,76,0.15); background: rgba(255,255,255,0.02); cursor: pointer; font-size: 14px; transition: all 0.2s; user-select: none; min-height: 48px; display: flex; align-items: center; }
+  .match-item:hover { border-color: var(--gold); background: rgba(201,168,76,0.05); }
+  .match-item.selected { border-color: var(--gold); background: rgba(201,168,76,0.1); color: var(--gold); }
+  .match-item.matched-correct { border-color: var(--correct); background: rgba(76,175,125,0.1); color: var(--correct); pointer-events: none; }
+  .match-item.matched-wrong { border-color: var(--wrong); background: rgba(207,90,90,0.1); animation: shake 0.3s; }
+  @keyframes shake { 0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)} }
+
+  /* BLANKS */
+  .blank-item { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .blank-item:last-child { margin-bottom: 0; border-bottom: none; padding-bottom: 0; }
+  .blank-sentence { font-size: 15px; line-height: 1.8; margin-bottom: 8px; }
+  .word-bank { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid rgba(201,168,76,0.1); }
+  .word-chip { padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(201,168,76,0.3); background: rgba(201,168,76,0.05); font-size: 13px; cursor: pointer; transition: all 0.2s; color: var(--gold); }
+  .word-chip:hover { background: rgba(201,168,76,0.15); }
+  .word-chip.used { opacity: 0.3; pointer-events: none; text-decoration: line-through; }
+  .blank-input { background: transparent; border: none; border-bottom: 2px solid rgba(201,168,76,0.4); color: var(--gold-light); font-family: 'DM Sans', sans-serif; font-size: 15px; padding: 2px 8px; width: 150px; outline: none; transition: border-color 0.2s; text-align: center; }
+  .blank-input:focus { border-bottom-color: var(--gold); }
+  .blank-input.correct { border-bottom-color: var(--correct); color: var(--correct); }
+  .blank-input.wrong { border-bottom-color: var(--wrong); color: var(--wrong); }
+  .hint { font-size: 12px; color: var(--text-muted); font-style: italic; }
+
+  /* MC */
+  .mc-item { margin-bottom: 28px; }
+  .mc-item:last-child { margin-bottom: 0; }
+  .mc-question { font-size: 15px; color: var(--text); margin-bottom: 12px; line-height: 1.5; }
+  .mc-question strong { color: var(--gold-light); font-weight: 500; }
+  .mc-options { display: flex; flex-direction: column; gap: 8px; }
+  .mc-option { padding: 12px 16px; border-radius: 10px; border: 1.5px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.02); cursor: pointer; font-size: 14px; transition: all 0.2s; display: flex; align-items: center; gap: 10px; }
+  .mc-option:hover { border-color: var(--gold); background: rgba(201,168,76,0.05); }
+  .mc-option.correct { border-color: var(--correct); background: rgba(76,175,125,0.1); color: var(--correct); }
+  .mc-option.wrong { border-color: var(--wrong); background: rgba(207,90,90,0.1); color: var(--wrong); }
+  .mc-letter { width: 26px; height: 26px; border-radius: 50%; border: 1px solid currentColor; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+
+  /* TF */
+  .tf-item { margin-bottom: 20px; padding: 16px; border-radius: 12px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); }
+  .tf-sentence { font-size: 14px; line-height: 1.6; margin-bottom: 12px; }
+  .tf-sentence em { color: var(--gold-light); font-style: italic; }
+  .tf-buttons { display: flex; gap: 10px; }
+  .tf-btn { padding: 8px 20px; border-radius: 8px; border: 1.5px solid rgba(255,255,255,0.1); background: transparent; color: var(--text-muted); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; letter-spacing: 0.5px; }
+  .tf-btn:hover:not(:disabled) { border-color: var(--gold); color: var(--gold); }
+  .tf-btn.correct { border-color: var(--correct); background: rgba(76,175,125,0.15); color: var(--correct); }
+  .tf-btn.wrong { border-color: var(--wrong); background: rgba(207,90,90,0.1); color: var(--wrong); }
+  .tf-explanation { font-size: 12px; margin-top: 10px; padding: 8px 12px; border-radius: 6px; background: rgba(201,168,76,0.07); color: var(--gold); display: none; line-height: 1.5; }
+  .tf-explanation.show { display: block; }
+
+  /* TRANSLATE */
+  .translate-item { margin-bottom: 24px; }
+  .translate-item:last-child { margin-bottom: 0; }
+  .ru-sentence { font-size: 15px; color: var(--text); margin-bottom: 10px; padding: 12px 16px; background: rgba(255,255,255,0.03); border-left: 3px solid var(--gold); border-radius: 0 8px 8px 0; line-height: 1.5; }
+  .translate-input { width: 100%; background: rgba(255,255,255,0.03); border: 1.5px solid rgba(201,168,76,0.2); border-radius: 10px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; padding: 12px 16px; outline: none; resize: none; transition: border-color 0.2s; min-height: 52px; }
+  .translate-input:focus { border-color: var(--gold); }
+  .check-translate-btn { margin-top: 8px; padding: 8px 18px; border-radius: 8px; border: 1px solid rgba(201,168,76,0.3); background: transparent; color: var(--gold); font-family: 'DM Sans', sans-serif; font-size: 12px; cursor: pointer; transition: all 0.2s; }
+  .check-translate-btn:hover { background: rgba(201,168,76,0.1); }
+  .translate-answer { font-size: 13px; margin-top: 10px; padding: 10px 14px; border-radius: 8px; background: rgba(76,175,125,0.08); border: 1px solid rgba(76,175,125,0.2); color: var(--correct); display: none; line-height: 1.5; }
+  .translate-answer.show { display: block; }
+
+  /* BUTTONS */
+  .check-btn { display: block; margin: 24px auto 0; padding: 12px 32px; border-radius: 50px; border: none; background: linear-gradient(135deg, var(--gold), var(--accent)); color: #0e0c0a; font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s; }
+  .check-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(201,168,76,0.25); }
+  .result-msg { text-align: center; font-size: 13px; margin-top: 16px; padding: 10px; border-radius: 8px; display: none; }
+  .result-msg.show { display: block; }
+  .result-msg.good { background: rgba(76,175,125,0.1); color: var(--correct); }
+  .result-msg.bad { background: rgba(207,90,90,0.08); color: var(--wrong); }
+
+  @media (max-width: 600px) {
+    .match-container { grid-template-columns: 1fr; }
+    .section-body { padding: 20px 16px; }
+    .idiom-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="label">Vocabulary Worksheet</div>
+  <h1>Song Vocabulary<br>Practice</h1>
+  <p>Idioms · Phrases · Power Words · 5 упражнений</p>
+</header>
+
+<div class="score-bar">
+  <span>Счёт:</span>
+  <span class="score-num" id="totalScore">0</span>
+  <span>/ <span id="maxScore">0</span> баллов</span>
+</div>
+
+<section>
+  <div class="section-header">
+    <div class="section-num">★</div>
+    <div>
+      <div class="section-title">Flashcards — нажми, чтобы увидеть перевод</div>
+      <div class="section-subtitle">Повтори перед тем как начать упражнения</div>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="idiom-grid" id="flashcards"></div>
+  </div>
+</section>
+
+<section>
+  <div class="section-header">
+    <div class="section-num">1</div>
+    <div>
+      <div class="section-title">Match the phrase</div>
+      <div class="section-subtitle">Нажми на английскую фразу, затем на её перевод</div>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="match-container">
+      <div class="match-col" id="matchEn"></div>
+      <div class="match-col" id="matchRu"></div>
+    </div>
+    <div class="result-msg" id="matchResult"></div>
+  </div>
+</section>
+
+<section>
+  <div class="section-header">
+    <div class="section-num">2</div>
+    <div>
+      <div class="section-title">Fill in the blank</div>
+      <div class="section-subtitle">Вставь нужное слово — нажми на слово из банка или напечатай</div>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="word-bank" id="wordBank"></div>
+    <div id="blanks"></div>
+    <button class="check-btn" onclick="checkBlanks()">Check answers</button>
+    <div class="result-msg" id="blankResult"></div>
+  </div>
+</section>
+
+<section>
+  <div class="section-header">
+    <div class="section-num">3</div>
+    <div>
+      <div class="section-title">Multiple choice</div>
+      <div class="section-subtitle">Выбери правильное значение или использование</div>
+    </div>
+  </div>
+  <div class="section-body">
+    <div id="mcQuestions"></div>
+  </div>
+</section>
+
+<section>
+  <div class="section-header">
+    <div class="section-num">4</div>
+    <div>
+      <div class="section-title">Correct or Wrong?</div>
+      <div class="section-subtitle">Правильно ли использована фраза в предложении?</div>
+    </div>
+  </div>
+  <div class="section-body">
+    <div id="tfItems"></div>
+  </div>
+</section>
+
+<section>
+  <div class="section-header">
+    <div class="section-num">5</div>
+    <div>
+      <div class="section-title">Translate into English</div>
+      <div class="section-subtitle">Переведи предложения, используя лексику из песни</div>
+    </div>
+  </div>
+  <div class="section-body">
+    <div id="translateItems"></div>
+  </div>
+</section>
+
+<script>
+const flashcardData = [
+  { en: "Dead wrong", ru: "Абсолютно неправ", hint: "dead = усилитель, как «absolutely»" },
+  { en: "Sick of it", ru: "Надоело / сыт по горло", hint: "I'm sick of waiting" },
+  { en: "Bored to death", ru: "Смертельно скучно", hint: "to death = усилитель" },
+  { en: "Get rid of", ru: "Избавиться от", hint: "get rid of bad habits" },
+  { en: "Take a stand", ru: "Занять позицию / выступить", hint: "не молчать" },
+  { en: "Fighting chance", ru: "Реальный шанс на победу", hint: "give me a fighting chance" },
+  { en: "It's no use", ru: "Бесполезно / нет смысла", hint: "it's no use crying" },
+  { en: "Empty promise", ru: "Пустое обещание", hint: "слова без действия" },
+  { en: "Hold on", ru: "Держись / не сдавайся", hint: "не путать с «подожди»" },
+  { en: "Count me out", ru: "Без меня / я не участвую", hint: "↔ count me in" },
+  { en: "Blood, sweat and tears", ru: "Кровь, пот и слёзы", hint: "= огромные усилия" },
+  { en: "Wine and dine", ru: "Шиковать / угощать по-королевски", hint: "wine and dine clients" },
+  { en: "Underdog", ru: "Аутсайдер, кого недооценивают", hint: "rooting for the underdog" },
+  { en: "Conquer", ru: "Покорить / завоевать", hint: "conquer your fears — не win!" },
+  { en: "Falter", ru: "Дрогнуть / потерять уверенность", hint: "don't falter now" },
+  { en: "Reclaim", ru: "Отвоевать обратно то, что было твоим", hint: "reclaim your life" },
+  { en: "Dignity", ru: "Достоинство", hint: "human dignity" },
+  { en: "Vanity", ru: "Тщеславие / суета", hint: "all is vanity — Библия" },
+  { en: "Resilient", ru: "Стойкий, гнётся но не ломается", hint: "≠ просто strong" },
+  { en: "Invincible", ru: "Непобедимый", hint: "in + vincere (лат. = побеждать)" },
+];
+
+const matchData = [
+  { en: "Sick of it", ru: "Сыт по горло" },
+  { en: "Take a stand", ru: "Занять позицию" },
+  { en: "Fighting chance", ru: "Реальный шанс" },
+  { en: "Count me out", ru: "Без меня" },
+  { en: "Get rid of", ru: "Избавиться от" },
+  { en: "Bored to death", ru: "Смертельно скучно" },
+];
+
+const blankData = [
+  { sentence: "I'm totally ___ waiting for him. Let's just go!", answer: "sick of", hint: "надоело" },
+  { sentence: "Don't give up — you still have a ___ chance.", answer: "fighting", hint: "реальный шанс" },
+  { sentence: "It's no use — I can't ___ rid of this habit.", answer: "get", hint: "избавиться" },
+  { sentence: "We need to ___ a stand and speak up.", answer: "take", hint: "занять позицию" },
+  { sentence: "She built her career through blood, sweat and ___.", answer: "tears", hint: "идиома Черчилля" },
+  { sentence: "If it involves public speaking, ___ me out.", answer: "count", hint: "без меня" },
+];
+
+const mcData = [
+  {
+    q: 'Что значит <strong>"I\'m sick of it"</strong>?',
+    options: ["Я заболел от этого", "Мне это надоело", "Я устал физически", "Мне плохо"],
+    correct: 1
+  },
+  {
+    q: 'Как правильно сказать «покорить страх высоты»?',
+    options: ["Win my fear of heights", "Conquer my fear of heights", "Beat my fear of heights", "B и C верны"],
+    correct: 3
+  },
+  {
+    q: '<strong>"Dead"</strong> в фразе <strong>"dead wrong"</strong> означает:',
+    options: ["Мёртвый", "Умерший", "Абсолютно / полностью", "Почти, едва"],
+    correct: 2
+  },
+  {
+    q: 'Что значит <strong>"The underdog won"</strong>?',
+    options: ["Собака выиграла", "Тот, от кого никто не ждал победы, выиграл", "Фаворит победил", "Матч отменили"],
+    correct: 1
+  },
+  {
+    q: 'Что значит <strong>"Hold on"</strong> в контексте мотивационной песни?',
+    options: ["Подожди секунду", "Держись / не сдавайся", "Возьми это", "Позвони мне"],
+    correct: 1
+  },
+  {
+    q: '<strong>"Resilient"</strong> лучше всего описывает человека, который:',
+    options: ["Никогда не падает", "Падает и поднимается снова", "Всегда побеждает", "Никогда не ошибается"],
+    correct: 1
+  },
+];
+
+const tfData = [
+  {
+    sentence: '"I\'m so <em>bored to death</em> — this movie is terrible!" — правильное использование?',
+    correct: true,
+    explanation: '✓ Верно! "Bored to death" = смертельно скучно. "To death" — усилитель значения.'
+  },
+  {
+    sentence: '"She <em>wined and dined</em> alone at home with leftovers." — правильное использование?',
+    correct: false,
+    explanation: '✗ Неверно. "Wine and dine" подразумевает роскошь и угощение кого-то. Нельзя шиковать самой с объедками.'
+  },
+  {
+    sentence: '"He\'s the <em>underdog</em> — nobody expects him to win, but he keeps fighting." — правильное?',
+    correct: true,
+    explanation: '✓ Верно! Underdog = тот, от кого не ждут победы, но кто продолжает бороться.'
+  },
+  {
+    sentence: '"I need to <em>win</em> my fear of heights." — правильное использование?',
+    correct: false,
+    explanation: '✗ Неверно. "Win" нужен соперник или приз. Правильно: "conquer my fear" — покорить страх.'
+  },
+  {
+    sentence: '"This project took blood, <em>sweat</em> and tears — I\'m so proud of it." — правильное?',
+    correct: true,
+    explanation: '✓ Верно! "Blood, sweat and tears" = огромные усилия и жертвы ради цели.'
+  },
+  {
+    sentence: '"<em>Count me in</em> — I definitely don\'t want to join." — правильное?',
+    correct: false,
+    explanation: '✗ Неверно! "Count me in" = я участвую, записывайте меня. Для отказа нужно "count me OUT".'
+  },
+];
+
+const translateData = [
+  { ru: "Мне уже надоело терпеть их пустые обещания.", answer: "I'm sick of their empty promises." },
+  { ru: "Пора занять позицию и избавиться от этой привычки.", answer: "It's time to take a stand and get rid of this habit." },
+  { ru: "Без меня — если это потребует крови, пота и слёз.", answer: "Count me out if it takes blood, sweat and tears." },
+  { ru: "Держись — у тебя ещё есть реальный шанс.", answer: "Hold on — you still have a fighting chance." },
+  { ru: "Она аутсайдер, но я верю что она покорит свои страхи и победит.", answer: "She's the underdog, but I believe she'll conquer her fears." },
+];
+
+// STATE
+let score = 0;
+let maxScore = 0;
+let matchSelected = null;
+let matchCorrect = 0;
+
+function addScore(pts) {
+  score += pts;
+  document.getElementById('totalScore').textContent = score;
+}
+function updateMax(pts) {
+  maxScore += pts;
+  document.getElementById('maxScore').textContent = maxScore;
+}
+
+// FLASHCARDS
+(function() {
+  const container = document.getElementById('flashcards');
+  flashcardData.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'idiom-card';
+    card.innerHTML = '<div class="idiom-en">' + item.en + '</div><div class="idiom-ru">' + item.ru + '</div><div class="idiom-hint">' + item.hint + '</div>';
+    card.addEventListener('click', () => card.classList.toggle('flipped'));
+    container.appendChild(card);
+  });
+})();
+
+// MATCH
+(function() {
+  updateMax(matchData.length * 2);
+  const enCol = document.getElementById('matchEn');
+  const ruCol = document.getElementById('matchRu');
+  const shuffledRu = [...matchData].sort(() => Math.random() - 0.5);
+  matchData.forEach(pair => {
+    const el = document.createElement('div');
+    el.className = 'match-item';
+    el.textContent = pair.en;
+    el.dataset.id = pair.en;
+    el.dataset.side = 'en';
+    el.addEventListener('click', () => handleMatchClick(el));
+    enCol.appendChild(el);
+  });
+  shuffledRu.forEach(pair => {
+    const el = document.createElement('div');
+    el.className = 'match-item';
+    el.textContent = pair.ru;
+    el.dataset.id = pair.en;
+    el.dataset.side = 'ru';
+    el.addEventListener('click', () => handleMatchClick(el));
+    ruCol.appendChild(el);
+  });
+})();
+
+function handleMatchClick(item) {
+  if (item.classList.contains('matched-correct')) return;
+  if (!matchSelected) {
+    matchSelected = item;
+    item.classList.add('selected');
+  } else {
+    if (matchSelected === item) { item.classList.remove('selected'); matchSelected = null; return; }
+    if (matchSelected.dataset.side === item.dataset.side) {
+      matchSelected.classList.remove('selected');
+      matchSelected = item;
+      item.classList.add('selected');
+      return;
+    }
+    const ok = matchSelected.dataset.id === item.dataset.id;
+    if (ok) {
+      matchSelected.classList.remove('selected');
+      matchSelected.classList.add('matched-correct');
+      item.classList.add('matched-correct');
+      matchCorrect++;
+      addScore(2);
+      if (matchCorrect === matchData.length) {
+        const msg = document.getElementById('matchResult');
+        msg.textContent = '🎉 Отлично! Все пары найдены!';
+        msg.className = 'result-msg show good';
+      }
+    } else {
+      item.classList.add('matched-wrong');
+      matchSelected.classList.add('matched-wrong');
+      setTimeout(() => {
+        item.classList.remove('matched-wrong', 'selected');
+        matchSelected.classList.remove('matched-wrong', 'selected');
+        matchSelected = null;
+      }, 600);
+      return;
+    }
+    matchSelected = null;
+  }
+}
+
+// BLANKS
+(function() {
+  updateMax(blankData.length);
+  const words = blankData.map(b => b.answer);
+  const shuffled = [...words].sort(() => Math.random() - 0.5);
+  const bankEl = document.getElementById('wordBank');
+  shuffled.forEach(w => {
+    const chip = document.createElement('div');
+    chip.className = 'word-chip';
+    chip.textContent = w;
+    chip.dataset.word = w;
+    chip.addEventListener('click', () => {
+      const focused = document.querySelector('.blank-input:focus');
+      if (focused) { focused.value = w; chip.classList.add('used'); }
+    });
+    bankEl.appendChild(chip);
+  });
+  const container = document.getElementById('blanks');
+  blankData.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'blank-item';
+    div.innerHTML = '<div class="blank-sentence">' + (i+1) + '. ' + item.sentence.replace('___', '<input class="blank-input" id="blank' + i + '" autocomplete="off" spellcheck="false">') + '</div><div class="hint">💡 ' + item.hint + '</div>';
+    container.appendChild(div);
+  });
+})();
+
+function checkBlanks() {
+  let correct = 0;
+  blankData.forEach((item, i) => {
+    const input = document.getElementById('blank' + i);
+    const val = input.value.trim().toLowerCase();
+    if (val === item.answer.toLowerCase()) { input.classList.add('correct'); input.classList.remove('wrong'); correct++; }
+    else { input.classList.add('wrong'); input.classList.remove('correct'); }
+  });
+  addScore(correct);
+  const msg = document.getElementById('blankResult');
+  msg.textContent = 'Результат: ' + correct + ' / ' + blankData.length + ' правильно';
+  msg.className = 'result-msg show ' + (correct >= blankData.length * 0.7 ? 'good' : 'bad');
+}
+
+// MULTIPLE CHOICE
+(function() {
+  updateMax(mcData.length);
+  const container = document.getElementById('mcQuestions');
+  const letters = ['A','B','C','D'];
+  mcData.forEach((item, qi) => {
+    const div = document.createElement('div');
+    div.className = 'mc-item';
+    let opts = item.options.map((opt, oi) =>
+      '<div class="mc-option" data-qi="' + qi + '" data-oi="' + oi + '" onclick="handleMC(this,' + qi + ',' + oi + ',' + item.correct + ')"><span class="mc-letter">' + letters[oi] + '</span>' + opt + '</div>'
+    ).join('');
+    div.innerHTML = '<div class="mc-question">' + (qi+1) + '. ' + item.q + '</div><div class="mc-options">' + opts + '</div>';
+    container.appendChild(div);
+  });
+})();
+
+function handleMC(el, qi, oi, correct) {
+  const group = document.querySelectorAll('[data-qi="' + qi + '"]');
+  group.forEach(o => o.style.pointerEvents = 'none');
+  if (oi === correct) { el.classList.add('correct'); addScore(1); }
+  else { el.classList.add('wrong'); group[correct].classList.add('correct'); }
+}
+
+// TRUE/FALSE
+(function() {
+  updateMax(tfData.length);
+  const container = document.getElementById('tfItems');
+  tfData.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'tf-item';
+    div.innerHTML =
+      '<div class="tf-sentence">' + (i+1) + '. ' + item.sentence + '</div>' +
+      '<div class="tf-buttons">' +
+        '<button class="tf-btn" onclick="handleTF(this,' + i + ',true,' + item.correct + ')">✓ True</button>' +
+        '<button class="tf-btn" onclick="handleTF(this,' + i + ',false,' + item.correct + ')">✗ False</button>' +
+      '</div>' +
+      '<div class="tf-explanation" id="tfExp' + i + '">' + item.explanation + '</div>';
+    container.appendChild(div);
+  });
+})();
+
+function handleTF(btn, i, chosen, correct) {
+  const buttons = btn.parentElement.querySelectorAll('.tf-btn');
+  buttons.forEach(b => b.disabled = true);
+  if (chosen === correct) { btn.classList.add('correct'); addScore(1); }
+  else {
+    btn.classList.add('wrong');
+    buttons.forEach(b => {
+      if ((b.textContent.includes('True') && correct) || (b.textContent.includes('False') && !correct)) b.classList.add('correct');
+    });
+  }
+  document.getElementById('tfExp' + i).classList.add('show');
+}
+
+// TRANSLATE
+(function() {
+  const container = document.getElementById('translateItems');
+  translateData.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'translate-item';
+    div.innerHTML =
+      '<div class="ru-sentence">' + (i+1) + '. ' + item.ru + '</div>' +
+      '<textarea class="translate-input" id="trans' + i + '" placeholder="Your English translation..."></textarea>' +
+      '<button class="check-translate-btn" onclick="showAns(' + i + ')">Show answer ↓</button>' +
+      '<div class="translate-answer" id="transAns' + i + '"><strong>Образец:</strong> ' + item.answer + '</div>';
+    container.appendChild(div);
+  });
+})();
+
+function showAns(i) { document.getElementById('transAns' + i).classList.add('show'); }
+</script>
+</body>
+</html>
